@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Restaurant;
+use Illuminate\Database\Eloquent\Model;
 
 class RestaurantPolicy extends BaseCrudPolicy
 {
@@ -17,7 +18,7 @@ class RestaurantPolicy extends BaseCrudPolicy
         return parent::viewAny($user);
     }
 
-    public function view(\App\Models\User $user, Restaurant $model): bool
+    public function view(\App\Models\User $user, Model $model): bool
     {
         return parent::view($user, $model);
     }
@@ -27,17 +28,17 @@ class RestaurantPolicy extends BaseCrudPolicy
         return parent::create($user);
     }
 
-    public function update(\App\Models\User $user, Restaurant $model): bool
+    public function update(\App\Models\User $user, Model $model): bool
     {
         return parent::update($user, $model);
     }
 
-    public function delete(\App\Models\User $user, Restaurant $model): bool
+    public function delete(\App\Models\User $user, Model $model): bool
     {
         return parent::delete($user, $model);
     }
 
-    public function restore(\App\Models\User $user, Restaurant $model): bool
+    public function restore(\App\Models\User $user, Model $model): bool
     {
         return parent::restore($user, $model);
     }
