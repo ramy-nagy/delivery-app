@@ -16,12 +16,12 @@ class TrackingController extends Controller
             ->first();
 
         if ($order === null) {
-            return response()->json(['message' => 'Order not found.'], 404);
+            return $this->notFound('Order not found.');
         }
 
         $status = $order->status instanceof \BackedEnum ? $order->status->value : $order->status;
 
-        return response()->json([
+        return $this->success([
             'uuid' => $order->uuid,
             'status' => $status,
             'restaurant' => $order->restaurant ? [
@@ -32,6 +32,6 @@ class TrackingController extends Controller
                 'latitude' => $order->driver->last_latitude,
                 'longitude' => $order->driver->last_longitude,
             ] : null,
-        ]);
+        ], 'Order tracking data');
     }
 }

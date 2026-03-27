@@ -21,7 +21,7 @@ class PaymentController extends Controller
         try {
             $payment = $payments->record($order, $request->user(), $method);
         } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
+            return $this->error($e->getMessage(), null, 422);
         }
 
         return new PaymentResource($payment);

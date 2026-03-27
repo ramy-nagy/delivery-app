@@ -15,7 +15,7 @@ class WebhookController extends Controller
             'payload' => $request->all(),
         ]);
 
-        return response()->json(['received' => true]);
+        return $this->success(['received' => true], 'Webhook received');
     }
 
     public function paymob(Request $request): JsonResponse
@@ -24,6 +24,6 @@ class WebhookController extends Controller
             'payload' => $request->all(),
         ]);
 
-        return response()->json(['received' => true]);
+        return $this->success(['received' => true], 'Webhook received');
     }
 }

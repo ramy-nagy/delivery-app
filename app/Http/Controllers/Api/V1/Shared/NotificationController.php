@@ -29,7 +29,7 @@ class NotificationController extends Controller
 
         $notification->update(['read_at' => now()]);
 
-        return response()->json(['message' => 'Marked as read.']);
+        return $this->success(null, 'Marked as read.');
     }
 
     public function markAllRead(Request $request): JsonResponse
@@ -39,6 +39,6 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => now()]);
 
-        return response()->json(['message' => 'All marked as read.']);
+        return $this->success(null, 'All marked as read.');
     }
 }

@@ -16,7 +16,7 @@ class DriverProfileController extends Controller
         $driver = $request->user()->driver;
 
         if ($driver === null) {
-            return response()->json(['message' => 'Driver profile not found.'], 404);
+            return $this->notFound('Driver profile not found.');
         }
 
         return new DriverResource($driver->load('user'));

@@ -24,9 +24,9 @@ class UploadController extends Controller
 
         $url = Storage::url($path);
 
-        return response()->json([
+        return $this->created([
             'path' => $path,
             'url' => $url,
-        ], 201);
+        ], 'File uploaded successfully');
     }
 }

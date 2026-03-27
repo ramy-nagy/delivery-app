@@ -47,7 +47,7 @@ class RestaurantController extends Controller
         $restaurant = $request->user()->ownedRestaurant;
 
         if ($restaurant === null) {
-            return response()->json(['message' => 'No restaurant linked to this account.'], 404);
+            return $this->notFound('No restaurant linked to this account.');
         }
 
         $restaurant->load('category');
@@ -60,7 +60,7 @@ class RestaurantController extends Controller
         $restaurant = $request->user()->ownedRestaurant;
 
         if ($restaurant === null) {
-            return response()->json(['message' => 'No restaurant linked to this account.'], 404);
+            return $this->notFound('No restaurant linked to this account.');
         }
 
         $data = $request->validated();

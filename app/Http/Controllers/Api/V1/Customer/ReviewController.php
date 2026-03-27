@@ -24,11 +24,11 @@ class ReviewController extends Controller
         }
 
         if ($order->status !== OrderStatus::DELIVERED) {
-            return response()->json(['message' => 'You can only review delivered orders.'], 422);
+            return $this->error('You can only review delivered orders.', null, 422);
         }
 
         if (Review::query()->where('order_id', $order->id)->where('user_id', $user->id)->exists()) {
-            return response()->json(['message' => 'You already reviewed this order.'], 422);
+            return $this->error('You already reviewed this order.', null, 422);
         }
 
         $review = Review::create([

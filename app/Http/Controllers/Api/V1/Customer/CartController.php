@@ -65,6 +65,6 @@ class CartController extends Controller
             'items' => [],
         ]);
 
-        return response()->json(['message' => 'Cart cleared.']);
+        return $this->success(null, 'Cart cleared.');
     }
 }
