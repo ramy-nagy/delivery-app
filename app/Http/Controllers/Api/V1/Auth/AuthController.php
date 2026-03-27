@@ -56,11 +56,11 @@ class AuthController extends Controller
         $device = $request->input('device_name', 'api');
         $token = $user->createToken($device)->plainTextToken;
 
-        return response()->json([
+        return $this->created([
             'token' => $token,
             'token_type' => 'Bearer',
             'user' => new UserResource($user->fresh()),
-        ], 201);
+        ], 'User registered successfully');
     }
 
     public function login(LoginRequest $request): JsonResponse
@@ -68,7 +68,7 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (! Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials.'], 422);
+            return $this->error('Invalid credentials.', null, 422);
         }
 
         /** @var User $user */
@@ -76,18 +76,18 @@ class AuthController extends Controller
         $device = $request->input('device_name', 'api');
         $token = $user->createToken($device)->plainTextToken;
 
-        return response()->json([
+        return $this->success([
             'token' => $token,
             'token_type' => 'Bearer',
             'user' => new UserResource($user),
-        ]);
+        ], 'Login successful');
     }
 
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out.']);
+        return $this->success(null, 'Logged out successfully');
     }
 
     public function user(Request $request): UserResource

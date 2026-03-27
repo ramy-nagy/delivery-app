@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Shop;
+use Illuminate\Database\Eloquent\Model;
 
 class ShopPolicy extends BaseCrudPolicy
 {
@@ -16,7 +17,7 @@ class ShopPolicy extends BaseCrudPolicy
         return parent::viewAny($user);
     }
 
-    public function view(\App\Models\User $user, Shop $model): bool
+    public function view(\App\Models\User $user, Model $model): bool
     {
         return parent::view($user, $model);
     }
@@ -26,17 +27,17 @@ class ShopPolicy extends BaseCrudPolicy
         return parent::create($user);
     }
 
-    public function update(\App\Models\User $user, Shop $model): bool
+    public function update(\App\Models\User $user, Model $model): bool
     {
         return parent::update($user, $model);
     }
 
-    public function delete(\App\Models\User $user, Shop $model): bool
+    public function delete(\App\Models\User $user, Model $model): bool
     {
         return parent::delete($user, $model);
     }
 
-    public function restore(\App\Models\User $user, Shop $model): bool
+    public function restore(\App\Models\User $user, Model $model): bool
     {
         return parent::restore($user, $model);
     }

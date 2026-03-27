@@ -10,15 +10,11 @@ class SocialAuthController extends Controller
 {
     public function redirect(Request $request, string $provider): JsonResponse
     {
-        return response()->json([
-            'message' => 'Social login is not configured. Wire '.$provider.' OAuth in a future release.',
-        ], 501);
+        return $this->error('Social login is not configured. Wire '.$provider.' OAuth in a future release.', null, 501);
     }
 
     public function callback(Request $request, string $provider): JsonResponse
     {
-        return response()->json([
-            'message' => 'Social callback not implemented.',
-        ], 501);
+        return $this->error('Social callback not implemented.', null, 501);
     }
 }

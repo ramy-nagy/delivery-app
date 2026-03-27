@@ -15,10 +15,10 @@ class PasswordResetController extends Controller
         $status = Password::sendResetLink($request->only('email'));
 
         if ($status !== Password::RESET_LINK_SENT) {
-            return response()->json(['message' => __($status)], 422);
+            return $this->error(__($status), null, 422);
         }
 
-        return response()->json(['message' => __($status)]);
+        return $this->success(null, __($status));
     }
 
     public function reset(ApiResetPasswordRequest $request): JsonResponse
@@ -33,9 +33,9 @@ class PasswordResetController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
-            return response()->json(['message' => __($status)], 422);
+            return $this->error(__($status), null, 422);
         }
 
-        return response()->json(['message' => __($status)]);
+        return $this->success(null, __($status));
     }
 }
