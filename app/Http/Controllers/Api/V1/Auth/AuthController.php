@@ -90,8 +90,8 @@ class AuthController extends Controller
         return $this->success(null, 'Logged out successfully');
     }
 
-    public function user(Request $request): UserResource
+    public function user(Request $request): JsonResponse
     {
-        return new UserResource($request->user());
+        return $this->success(new UserResource($request->user()), 'User data');
     }
 }
