@@ -127,4 +127,22 @@ return [
 
     'serializable_classes' => false,
 
+    'strategies' => [
+        'driver_locations' => [
+            'ttl' => 60,
+            'tags' => ['drivers', 'locations'],
+        ],
+        'restaurant_menus' => [
+            'ttl' => 86400,
+            'tags' => ['restaurants', 'menus'],
+        ],
+        'delivery_zones' => [
+            'ttl' => 604800,
+            'tags' => ['delivery-zones'],
+        ],
+        'user_addresses' => [
+            'ttl' => 3600,
+            'tags' => ['addresses'],
+        ],
+    ],
 ];

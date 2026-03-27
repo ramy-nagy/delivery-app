@@ -1,0 +1,918 @@
+openapi: 3.0.3
+info:
+  title: Delivery App API
+  description: |
+    Mobile and client REST API (Laravel Sanctum).
+    See `mobile-api.md` for narrative documentation.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local
+  - url: https://{host}/api/v1
+    description: Production
+    variables:
+      host:
+        default: api.example.com
+
+tags:
+  - name: Auth
+  - name: Public
+  - name: Shared
+  - name: Customer
+  - name: Driver
+  - name: Restaurant
+  - name: Webhooks
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Sanctum
+      description: Token from POST /auth/login or /auth/register
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string, format: email }
+        phone: { type: string, nullable: true }
+        role:
+          type: string
+          enum: [customer, driver, restaurant, admin]
+        created_at: { type: string, format: date-time }
+
+    AuthTokenResponse:
+      type: object
+      properties:
+        token: { type: string }
+        token_type: { type: string, example: Bearer }
+        user:
+          $ref: '#/components/schemas/User'
+
+    ValidationError:
+      type: object
+      properties:
+        message: { type: string }
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    MessageError:
+      type: object
+      properties:
+        message: { type: string }
+
+    Restaurant:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        slug: { type: string }
+        description: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
+        is_open: { type: boolean }
+        minimum_order_cents: { type: integer }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+
+    MenuItem:
+      type: object
+      properties:
+        id: { type: integer }
+        restaurant_id: { type: integer }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        price_cents: { type: integer }
+        is_available: { type: boolean }
+        sort_order: { type: integer }
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        uuid: { type: string, format: uuid }
+        status:
+          type: string
+          enum:
+            [pending, accepted, preparing, ready, picked_up, delivered, cancelled]
+        subtotal_cents: { type: integer }
+        delivery_fee_cents: { type: integer }
+        tax_cents: { type: integer }
+        total_cents: { type: integer }
+        notes: { type: string, nullable: true }
+        delivery_location:
+          type: object
+          properties:
+            latitude: { type: number }
+            longitude: { type: number }
+        restaurant_id: { type: integer }
+        driver_id: { type: integer, nullable: true }
+        customer_id: { type: integer }
+
+    Cart:
+      type: object
+      properties:
+        restaurant_id: { type: integer, nullable: true }
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              menu_item_id: { type: integer }
+              quantity: { type: integer }
+              options: { type: array, items: { type: object } }
+
+    CustomerAddress:
+      type: object
+      properties:
+        id: { type: integer }
+        label: { type: string, nullable: true }
+        line1: { type: string }
+        line2: { type: string, nullable: true }
+        city: { type: string, nullable: true }
+        region: { type: string, nullable: true }
+        postal_code: { type: string, nullable: true }
+        country: { type: string, nullable: true }
+        latitude: { type: number, nullable: true }
+        longitude: { type: number, nullable: true }
+        is_default: { type: boolean }
+
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        order_id: { type: integer }
+        method: { type: string, enum: [cash, card, wallet] }
+        status: { type: string, enum: [pending, paid, failed, refunded] }
+        amount_cents: { type: integer }
+        currency: { type: string }
+        gateway_reference: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+
+    Driver:
+      type: object
+      properties:
+        id: { type: integer }
+        user_id: { type: integer }
+        status: { type: string, enum: [available, on_delivery, offline] }
+        vehicle_type: { type: string, enum: [bike, car, scooter], nullable: true }
+        license_plate: { type: string, nullable: true }
+        verified_at: { type: string, format: date-time, nullable: true }
+        last_latitude: { type: number, nullable: true }
+        last_longitude: { type: number, nullable: true }
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, password_confirmation, role]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                password_confirmation: { type: string }
+                phone: { type: string }
+                role:
+                  type: string
+                  enum: [customer, driver, restaurant]
+                business_name: { type: string, description: Required when role is restaurant }
+                device_name: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+                device_name: { type: string }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokenResponse'
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageError'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (revoke current token)
+      responses:
+        '200':
+          description: OK
+
+  /auth/user:
+    get:
+      tags: [Auth]
+      summary: Current user
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /auth/forgot-password:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Request password reset email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200':
+          description: OK
+        '422':
+          description: Validation
+
+  /auth/reset-password:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Reset password with token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, token, password, password_confirmation]
+              properties:
+                email: { type: string }
+                token: { type: string }
+                password: { type: string }
+                password_confirmation: { type: string }
+      responses:
+        '200':
+          description: OK
+        '422':
+          description: Error
+
+  /auth/social/{provider}:
+    get:
+      tags: [Auth]
+      security: []
+      summary: Social OAuth (not implemented)
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '501':
+          description: Not implemented
+
+  /auth/social/{provider}/callback:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Social callback (not implemented)
+      parameters:
+        - name: provider
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '501':
+          description: Not implemented
+
+  /restaurants:
+    get:
+      tags: [Public]
+      security: []
+      summary: List restaurants
+      parameters:
+        - in: query
+          name: open_only
+          schema: { type: boolean, default: true }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Paginated RestaurantResource collection
+
+  /restaurants/{restaurant}:
+    get:
+      tags: [Public]
+      security: []
+      summary: Restaurant detail with menu
+      parameters:
+        - name: restaurant
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: RestaurantResource
+
+  /restaurants/{restaurant}/menu-items:
+    get:
+      tags: [Public]
+      security: []
+      summary: Public menu items
+      parameters:
+        - name: restaurant
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: MenuItemResource collection
+
+  /track/{uuid}:
+    get:
+      tags: [Public]
+      security: []
+      summary: Public order tracking
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Tracking payload
+        '404':
+          description: Not found
+
+  /notifications:
+    get:
+      tags: [Shared]
+      summary: List notifications
+      responses:
+        '200':
+          description: Paginated NotificationResource
+
+  /notifications/{id}/read:
+    post:
+      tags: [Shared]
+      summary: Mark notification read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OK
+
+  /notifications/read-all:
+    post:
+      tags: [Shared]
+      summary: Mark all read
+      responses:
+        '200':
+          description: OK
+
+  /upload:
+    post:
+      tags: [Shared]
+      summary: Upload file (multipart)
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                folder:
+                  type: string
+      responses:
+        '201':
+          description: path and url
+
+  /customer/cart:
+    get:
+      tags: [Customer]
+      summary: Get cart
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Cart'
+    put:
+      tags: [Customer]
+      summary: Sync cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [restaurant_id, items]
+              properties:
+                restaurant_id: { type: integer }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [menu_item_id, quantity]
+                    properties:
+                      menu_item_id: { type: integer }
+                      quantity: { type: integer }
+                      options: { type: array }
+      responses:
+        '200':
+          description: CartResource
+    delete:
+      tags: [Customer]
+      summary: Clear cart
+      responses:
+        '200':
+          description: OK
+
+  /customer/orders:
+    get:
+      tags: [Customer]
+      summary: List my orders
+      responses:
+        '200':
+          description: Paginated OrderResource
+    post:
+      tags: [Customer]
+      summary: Place order (direct)
+      description: Requires restaurant open.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [restaurant_id, items, delivery_location, subtotal]
+              properties:
+                restaurant_id: { type: integer }
+                items:
+                  type: array
+                  items: { type: object }
+                delivery_location:
+                  type: object
+                  required: [latitude, longitude]
+                  properties:
+                    latitude: { type: number }
+                    longitude: { type: number }
+                subtotal: { type: number }
+                delivery_fee: { type: number }
+                tax: { type: number }
+                notes: { type: string }
+      responses:
+        '200':
+          description: OrderResource
+        '422':
+          description: Validation or business error
+
+  /customer/orders/checkout:
+    post:
+      tags: [Customer]
+      summary: Checkout from saved cart
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [delivery_location]
+              properties:
+                delivery_location:
+                  type: object
+                  required: [latitude, longitude]
+                  properties:
+                    latitude: { type: number }
+                    longitude: { type: number }
+                delivery_fee: { type: number }
+                tax: { type: number }
+                notes: { type: string }
+      responses:
+        '200':
+          description: OrderResource
+
+  /customer/orders/{order}:
+    get:
+      tags: [Customer]
+      summary: Order detail
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OrderResource
+        '403':
+          description: Forbidden
+
+  /customer/orders/{order}/cancel:
+    post:
+      tags: [Customer]
+      summary: Cancel order
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        '200':
+          description: OrderResource
+
+  /customer/addresses:
+    get:
+      tags: [Customer]
+      summary: List addresses
+      responses:
+        '200':
+          description: CustomerAddressResource collection
+    post:
+      tags: [Customer]
+      summary: Create address
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerAddress'
+      responses:
+        '200':
+          description: CustomerAddressResource
+
+  /customer/addresses/{address}:
+    get:
+      tags: [Customer]
+      summary: Show address
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: CustomerAddressResource
+    put:
+      tags: [Customer]
+      summary: Update address
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: CustomerAddressResource
+    delete:
+      tags: [Customer]
+      summary: Delete address
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: No content
+
+  /customer/reviews:
+    post:
+      tags: [Customer]
+      summary: Create review for delivered order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id, rating]
+              properties:
+                order_id: { type: integer }
+                rating: { type: integer, minimum: 1, maximum: 5 }
+                comment: { type: string }
+      responses:
+        '200':
+          description: ReviewResource
+
+  /customer/payments/process:
+    post:
+      tags: [Customer]
+      summary: Record payment for order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [order_id, method]
+              properties:
+                order_id: { type: integer }
+                method:
+                  type: string
+                  enum: [cash, card, wallet]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+
+  /driver/profile:
+    get:
+      tags: [Driver]
+      summary: Driver profile
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Driver'
+    put:
+      tags: [Driver]
+      summary: Update driver profile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                vehicle_type: { type: string, enum: [bike, car, scooter] }
+                license_plate: { type: string }
+      responses:
+        '200':
+          description: DriverResource
+
+  /driver/location:
+    put:
+      tags: [Driver]
+      summary: Update GPS (verified drivers)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [latitude, longitude]
+              properties:
+                latitude: { type: number }
+                longitude: { type: number }
+      responses:
+        '200':
+          description: DriverResource
+
+  /driver/status:
+    patch:
+      tags: [Driver]
+      summary: Update driver availability status
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [available, on_delivery, offline]
+      responses:
+        '200':
+          description: DriverResource
+
+  /driver/orders/available:
+    get:
+      tags: [Driver]
+      summary: Ready orders without driver
+      responses:
+        '200':
+          description: Paginated OrderResource
+
+  /driver/orders:
+    get:
+      tags: [Driver]
+      summary: My assigned orders
+      responses:
+        '200':
+          description: Paginated OrderResource
+
+  /driver/orders/{order}:
+    get:
+      tags: [Driver]
+      summary: Order detail
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OrderResource
+
+  /driver/orders/{order}/claim:
+    post:
+      tags: [Driver]
+      summary: Claim ready order
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OrderResource
+
+  /driver/orders/{order}/status:
+    patch:
+      tags: [Driver]
+      summary: picked_up or delivered
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [picked_up, delivered]
+      responses:
+        '200':
+          description: OrderResource
+
+  /restaurant/me:
+    get:
+      tags: [Restaurant]
+      summary: My restaurant
+      responses:
+        '200':
+          description: RestaurantResource
+    put:
+      tags: [Restaurant]
+      summary: Update restaurant profile
+      responses:
+        '200':
+          description: RestaurantResource
+
+  /restaurant/orders:
+    get:
+      tags: [Restaurant]
+      summary: Incoming orders
+      responses:
+        '200':
+          description: Paginated OrderResource
+
+  /restaurant/orders/{order}:
+    get:
+      tags: [Restaurant]
+      summary: Order detail
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: OrderResource
+
+  /restaurant/orders/{order}/status:
+    patch:
+      tags: [Restaurant]
+      summary: Update kitchen status
+      parameters:
+        - name: order
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [accepted, preparing, ready, cancelled]
+      responses:
+        '200':
+          description: OrderResource
+
+  /restaurant/menu-items:
+    get:
+      tags: [Restaurant]
+      summary: List menu items (owner)
+      responses:
+        '200':
+          description: Paginated MenuItemResource
+    post:
+      tags: [Restaurant]
+      summary: Create menu item
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, price]
+              properties:
+                name: { type: string }
+                description: { type: string }
+                price: { type: number, description: Major currency units }
+                is_available: { type: boolean }
+                sort_order: { type: integer }
+      responses:
+        '200':
+          description: MenuItemResource
+
+  /restaurant/menu-items/{menuItem}:
+    put:
+      tags: [Restaurant]
+      summary: Update menu item
+      parameters:
+        - name: menuItem
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: MenuItemResource
+    delete:
+      tags: [Restaurant]
+      summary: Delete menu item
+      parameters:
+        - name: menuItem
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '204':
+          description: No content
+
+  /payments/webhooks/stripe:
+    post:
+      tags: [Webhooks]
+      security: []
+      summary: Stripe webhook (server)
+      responses:
+        '200':
+          description: received
+
+  /payments/webhooks/paymob:
+    post:
+      tags: [Webhooks]
+      security: []
+      summary: Paymob webhook (server)
+      responses:
+        '200':
+          description: received
