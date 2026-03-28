@@ -16,9 +16,9 @@ class RestaurantController extends Controller
     {
         $query = Restaurant::query()->with(['category', 'reviews']);
 
-        if ($request->boolean('open_only', true)) {
-            $query->where('is_open', true);
-        }
+        // if ($request->boolean('open_only', true)) {
+        //     $query->where('is_open', true);
+        // }
 
         if ($search = $request->query('q')) {
             $query->where(function ($q) use ($search): void {
