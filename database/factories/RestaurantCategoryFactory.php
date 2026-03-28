@@ -14,8 +14,19 @@ class RestaurantCategoryFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->unique()->words(2, true);
-
+        $categories = [
+            'مشويات',
+            'كشري',
+            'فول وفلافل',
+            'أسماك',
+            'بيتزا',
+            'شاورما',
+            'حلويات شرقية',
+            'مأكولات بحرية',
+            'وجبات سريعة',
+            'عصائر طبيعية',
+        ];
+        $name = fake()->unique()->randomElement($categories);
         return [
             'name' => $name,
             'slug' => str($name)->slug(),

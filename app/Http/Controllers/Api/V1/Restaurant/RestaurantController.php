@@ -14,7 +14,7 @@ class RestaurantController extends Controller
 {
     public function index(Request $request): AnonymousResourceCollection
     {
-        $query = Restaurant::query()->with('category');
+        $query = Restaurant::query()->with(['category', 'reviews']);
 
         if ($request->boolean('open_only', true)) {
             $query->where('is_open', true);
@@ -37,6 +37,7 @@ class RestaurantController extends Controller
         $restaurant->load([
             'category',
             'menuItems' => fn ($q) => $q->where('is_available', true)->orderBy('sort_order'),
+            'reviews',
         ]);
 
         return new RestaurantResource($restaurant);

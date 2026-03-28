@@ -22,6 +22,11 @@ class RestaurantResource extends JsonResource
             'minimum_order_cents' => $this->minimum_order_cents,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
+            'logo_url' => $this->getFirstMediaUrl('logo'),
+            'background_url' => $this->getFirstMediaUrl('background'),
+            'average_rating' => round($this->reviews()->avg('rating'), 2),
+            'reviews_count' => $this->reviews()->count(),
+            'reviews' => \App\Http\Resources\V1\ReviewResource::collection($this->whenLoaded('reviews')),
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,

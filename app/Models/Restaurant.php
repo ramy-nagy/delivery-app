@@ -1,3 +1,7 @@
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(\App\Models\Review::class);
+    }
 <?php
 
 namespace App\Models;
@@ -8,12 +12,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Restaurant extends Model
+class Restaurant extends Model implements HasMedia
 {
     /** @use HasFactory<RestaurantFactory> */
     use HasFactory;
     use SoftDeletes;
+    use InteractsWithMedia;
+    /**
+     * Register media collections for logo and background.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('logo')->singleFile();
+        $this->addMediaCollection('background')->singleFile();
+    }
 
     protected $fillable = [
         'owner_id',

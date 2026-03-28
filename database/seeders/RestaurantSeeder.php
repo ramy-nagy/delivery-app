@@ -9,7 +9,8 @@ class RestaurantSeeder extends Seeder
 {
     public function run(): void
     {
-        Restaurant::factory()->count(10)->create();
+        // Create 10 Egyptian restaurants with images and categories
+        \App\Models\Restaurant::factory()->count(10)->create();
     }
 }
 
