@@ -48,18 +48,18 @@ class RestaurantFactory extends Factory
             ],
         ];
     }
-}
     public function configure()
     {
         return $this->afterCreating(function (\App\Models\Restaurant $restaurant) {
-            // Attach logo and background images from local storage or URLs
-            $logoPath = public_path('build/sample-restaurant-logo.png');
-            $bgPath = public_path('build/sample-restaurant-bg.jpg');
-            if (file_exists($logoPath)) {
-                $restaurant->addMedia($logoPath)->toMediaCollection('logo');
-            }
-            if (file_exists($bgPath)) {
-                $restaurant->addMedia($bgPath)->toMediaCollection('background');
-            }
+            // Use random images from the internet for logo and background
+            $logoUrl = 'https://source.unsplash.com/100x100/?restaurant,logo,food&sig=' . rand(1, 10000);
+            $bgUrl = 'https://source.unsplash.com/600x300/?restaurant,background,food&sig=' . rand(1, 10000);
+            try {
+                $restaurant->addMediaFromUrl($logoUrl)->toMediaCollection('logo');
+            } catch (\Exception $e) {}
+            try {
+                $restaurant->addMediaFromUrl($bgUrl)->toMediaCollection('background');
+            } catch (\Exception $e) {}
         });
     }
+}
