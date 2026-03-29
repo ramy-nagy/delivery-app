@@ -22,7 +22,7 @@ class MenuItemResource extends JsonResource
             'price_cents' => $this->price_cents,
             'is_available' => (bool) $this->is_available,
             'sort_order' => $this->sort_order,
-            'image_url' => $this->getFirstMediaUrl('image'),
+            'image_url' => $this->getFirstMediaUrl('image') ?: 'https://logopond.com/logos/a447d60b6c1ffcfcb618ed05ecd9a679.png',
         ];
     }
 }
