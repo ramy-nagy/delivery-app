@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\V1\Shared\NotificationController;
 use App\Http\Controllers\Api\V1\Shared\TrackingController;
 use App\Http\Controllers\Api\V1\Shared\UploadController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\RestaurantCategoryController;
 
 Route::prefix('auth')->group(function (): void {
     Route::post('register', [AuthController::class, 'register']);
@@ -33,6 +34,8 @@ Route::prefix('auth')->group(function (): void {
 Route::get('restaurants', [RestaurantController::class, 'index']);
 Route::get('restaurants/{restaurant}', [RestaurantController::class, 'show']);
 Route::get('restaurants/{restaurant}/menu-items', [MenuController::class, 'index']);
+
+Route::get('restaurant-categories', [RestaurantCategoryController::class, 'index']);
 
 Route::get('track/{uuid}', [TrackingController::class, 'show'])
     ->where('uuid', '[0-9a-fA-F\\-]{36}');
