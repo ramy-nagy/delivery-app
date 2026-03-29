@@ -10,11 +10,23 @@ class MenuItemSeeder extends Seeder
 {
     public function run(): void
     {
-        // For each restaurant, create 5 menu items
-        Restaurant::all()->each(function ($restaurant) {
-            MenuItem::factory()->count(5)->create([
-                'restaurant_id' => $restaurant->id,
-            ]);
+        $categories = [
+            'البيتزا',
+            'السندوتشات',
+            'المقبلات',
+            'المشويات',
+            'الأطباق الرئيسية',
+            'الحلويات',
+            'المشروبات',
+        ];
+        Restaurant::all()->each(function ($restaurant) use ($categories) {
+            foreach ($categories as $category) {
+                // لكل فئة، أضف 3 أصناف
+                MenuItem::factory()->count(3)->create([
+                    'restaurant_id' => $restaurant->id,
+                    'category' => $category,
+                ]);
+            }
         });
     }
 }
