@@ -35,6 +35,7 @@ class MenuItemController extends Controller
 
         $item = MenuItem::create([
             'restaurant_id' => $restaurant->id,
+            'category' => $data['category'],
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'price_cents' => $priceCents,
