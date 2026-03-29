@@ -15,15 +15,6 @@ class MenuItemFactory extends Factory
 
     public function definition(): array
     {
-        $categories = [
-            'البيتزا',
-            'السندوتشات',
-            'المقبلات',
-            'المشويات',
-            'الأطباق الرئيسية',
-            'الحلويات',
-            'المشروبات',
-        ];
         $arabicNames = [
             'شاورما دجاج', 'بيتزا مارجريتا', 'كباب لحم', 'فلافل', 'حمص بالطحينة',
             'سلطة فتوش', 'مندي دجاج', 'كشري', 'ملوخية', 'طاجن بامية',
@@ -43,7 +34,7 @@ class MenuItemFactory extends Factory
         ];
         return [
             'restaurant_id' => Restaurant::factory(),
-            'category' => $this->faker->randomElement($categories),
+            'category_id' => null, // يجب تعيينها في الـ seeder
             'name' => $this->faker->randomElement($arabicNames),
             'description' => $this->faker->randomElement($arabicDescriptions),
             'price_cents' => fake()->numberBetween(500, 5000),
