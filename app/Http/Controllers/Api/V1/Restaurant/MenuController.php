@@ -12,13 +12,14 @@ class MenuController extends Controller
     /**
      * Public menu listing for a restaurant (same payload as show restaurant, items only).
      */
-    public function index(Restaurant $restaurant): AnonymousResourceCollection
+    public function index(Restaurant $restaurant)
     {
-        $items = $restaurant->menuItems()
-            ->where('is_available', true)
-            ->orderBy('sort_order')
-            ->get();
+        $categories = \App\Models\MenuCategory::with(['items' => function ($query) use ($restaurant) {
+            $query->where('restaurant_id', $restaurant->id)
+                ->where('is_available', true)
+                ->orderBy('sort_order');
+        }])->orderBy('sort_order')->get();
 
-        return MenuItemResource::collection($items);
+        return \App\Http\Resources\V1\MenuCategoryResource::collection($categories);
     }
 }

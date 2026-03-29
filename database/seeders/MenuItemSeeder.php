@@ -10,22 +10,24 @@ class MenuItemSeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = [
-            'البيتزا',
-            'السندوتشات',
-            'المقبلات',
-            'المشويات',
-            'الأطباق الرئيسية',
-            'الحلويات',
-            'المشروبات',
+        $categories = \App\Models\MenuCategory::all();
+        $images = [
+            public_path('images/food1.jpg'),
+            public_path('images/food2.jpg'),
+            public_path('images/food3.jpg'),
+            public_path('images/food4.jpg'),
         ];
-        Restaurant::all()->each(function ($restaurant) use ($categories) {
+        Restaurant::all()->each(function ($restaurant) use ($categories, $images) {
             foreach ($categories as $category) {
-                // لكل فئة، أضف 3 أصناف
-                MenuItem::factory()->count(3)->create([
+                $items = \App\Models\MenuItem::factory()->count(3)->create([
                     'restaurant_id' => $restaurant->id,
-                    'category' => $category,
+                    'category_id' => $category->id,
                 ]);
+                foreach ($items as $item) {
+                    $item->addMedia($images[array_rand($images)])
+                        ->preservingOriginal()
+                        ->toMediaCollection('image');
+                }
             }
         });
     }
