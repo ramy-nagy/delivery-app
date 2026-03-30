@@ -6,9 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class MenuCategory extends Model
+class MenuCategory extends Model implements \Spatie\MediaLibrary\HasMedia
 {
     use HasFactory;
+    use \Spatie\MediaLibrary\InteractsWithMedia;
+
+     /**
+     * Register media collection for category image.
+     */
 
     protected $fillable = ['name', 'slug', 'sort_order', 'image'];
 
