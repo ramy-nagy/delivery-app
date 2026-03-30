@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\RestaurantCategoryController;
 use App\Http\Controllers\Api\V1\MenuCategoryController;
 use App\Http\Controllers\Api\V1\MainCategoryController;
+use App\Http\Controllers\Api\V1\SliderController;
 
 Route::prefix('auth')->group(function (): void {
     Route::post('register', [AuthController::class, 'register']);
@@ -110,6 +111,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 });
 
 Route::apiResource('menu-categories', MenuCategoryController::class);
+
+Route::apiResource('sliders', SliderController::class);
 
 // Main Categories routes
 Route::get('main-categories', [MainCategoryController::class, 'index']);

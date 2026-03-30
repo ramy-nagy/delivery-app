@@ -19,7 +19,7 @@ class RestaurantResource extends JsonResource
             'description' => $this->description,
             'phone' => $this->phone,
             'is_open' => $this->isOpen(),
-                        'opening_hours' => $this->opening_hours,
+            // 'opening_hours' => $this->opening_hours,
             'minimum_order_cents' => $this->minimum_order_cents,
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
@@ -27,7 +27,7 @@ class RestaurantResource extends JsonResource
             'background_url' => $this->getFirstMediaUrl('background')  ?: 'https://logopond.com/logos/a447d60b6c1ffcfcb618ed05ecd9a679.png',
             'average_rating' => round($this->reviews()->avg('rating'), 2),
             'reviews_count' => $this->reviews()->count(),
-            'reviews' => \App\Http\Resources\V1\ReviewResource::collection($this->whenLoaded('reviews')),
+            // 'reviews' => \App\Http\Resources\V1\ReviewResource::collection($this->whenLoaded('reviews')),
             'category' => $this->whenLoaded('category', fn () => [
                 'id' => $this->category->id,
                 'name' => $this->category->name,
