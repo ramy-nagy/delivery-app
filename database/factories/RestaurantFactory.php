@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Restaurant;
 use App\Models\RestaurantCategory;
+use App\Models\MenuCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,8 +29,10 @@ class RestaurantFactory extends Factory
             'مطعم مؤمن',
         ];
         $name = fake()->unique()->randomElement($egyptianNames);
+        $mainCategories = MenuCategory::whereIn('slug', ['restaurants', 'shops', 'pharmacies'])->pluck('id')->toArray();
         return [
             'restaurant_category_id' => RestaurantCategory::factory(),
+            'main_category_id' => fake()->randomElement($mainCategories),
             'name' => $name,
             'slug' => str($name)->slug(),
             'description' => 'أفضل الأكلات المصرية الأصيلة',

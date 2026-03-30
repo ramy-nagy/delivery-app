@@ -31,6 +31,7 @@ class Restaurant extends Model implements HasMedia
     protected $fillable = [
         'owner_id',
         'restaurant_category_id',
+        'main_category_id',
         'name',
         'slug',
         'description',
@@ -58,6 +59,11 @@ class Restaurant extends Model implements HasMedia
     public function category(): BelongsTo
     {
         return $this->belongsTo(RestaurantCategory::class, 'restaurant_category_id');
+    }
+
+    public function mainCategory(): BelongsTo
+    {
+        return $this->belongsTo(MenuCategory::class, 'main_category_id');
     }
 
     public function menuItems(): HasMany

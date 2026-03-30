@@ -10,7 +10,7 @@ class MenuCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'sort_order'];
+    protected $fillable = ['name', 'slug', 'sort_order', 'image'];
 
     public function items(): HasMany
     {

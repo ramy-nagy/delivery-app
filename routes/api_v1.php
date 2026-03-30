@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\Shared\TrackingController;
 use App\Http\Controllers\Api\V1\Shared\UploadController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\RestaurantCategoryController;
+use App\Http\Controllers\Api\V1\MenuCategoryController;
 
 Route::prefix('auth')->group(function (): void {
     Route::post('register', [AuthController::class, 'register']);
@@ -106,3 +107,5 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::delete('menu-items/{menuItem}', [MenuItemController::class, 'destroy']);
     });
 });
+
+Route::apiResource('menu-categories', MenuCategoryController::class);
