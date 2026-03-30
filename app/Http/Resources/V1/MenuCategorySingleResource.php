@@ -17,7 +17,7 @@ class MenuCategorySingleResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'sort_order' => $this->sort_order,
-            'image' => $this->getFirstMediaUrl('image')  ?: 'https://logopond.com/logos/a447d60b6c1ffcfcb618ed05ecd9a679.png',
+            'image' => $this->getFirstMediaUrl('image')  ?: 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcR_Ch6uLWwY2o6JS0e6HsSwyN2oa6AaBBEwcU_vpanL0gN0zQyd',
             'items' => MenuItemResource::collection($this->whenLoaded('items')),
         ];
     }
