@@ -18,11 +18,13 @@ use App\Models\Cart;
 use App\Models\MenuItem;
 use App\Models\Restaurant;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Http\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    use ApiResponse;
+    public function index(Request $request)
     {
         $orders = Order::query()
             ->where('customer_id', $request->user()->id)
@@ -30,40 +32,38 @@ class OrderController extends Controller
             ->latest()
             ->paginate(20);
 
-        return OrderResource::collection($orders);
+        return $this->success(OrderResource::collection($orders), 'Orders fetched successfully.');
     }
 
-    public function show(Request $request, Order $order): OrderResource
+    public function show(Request $request, Order $order)
     {
         $this->authorizeCustomerOrder($request, $order);
-
-        return new OrderResource($order->load(['items', 'restaurant', 'driver']));
+        return $this->success(new OrderResource($order->load(['items', 'restaurant', 'driver'])), 'Order fetched successfully.');
     }
 
     public function store(
         PlaceOrderRequest $request,
         CreateOrderActionInterface $action,
-    ): OrderResource {
+    ) {
         $dto = CreateOrderDto::fromRequest($request);
         $order = $action->execute($dto);
-
-        return new OrderResource($order->load(['items', 'restaurant', 'driver']));
+        return $this->success(new OrderResource($order->load(['items', 'restaurant', 'driver'])), 'Order placed successfully.');
     }
 
     public function checkout(
         CheckoutOrderRequest $request,
         CreateOrderActionInterface $action,
-    ): OrderResource {
+    ) {
         $user = $request->user();
         $cart = Cart::query()->where('user_id', $user->id)->first();
 
         if ($cart === null || $cart->restaurant_id === null || $cart->items === []) {
-            abort(422, 'Cart is empty.');
+            return $this->error('Cart is empty.');
         }
 
         $restaurant = Restaurant::query()->findOrFail($cart->restaurant_id);
         if (! $restaurant->isOpen()) {
-            abort(422, 'Restaurant is closed.');
+            return $this->error('Restaurant is closed.');
         }
 
         $items = $cart->items;
@@ -82,7 +82,7 @@ class OrderController extends Controller
                 ->first();
 
             if ($menuItem === null || $qty < 1) {
-                abort(422, 'Cart contains invalid or unavailable items.');
+                return $this->error('Cart contains invalid or unavailable items.');
             }
 
             $subtotalCents += $menuItem->price_cents * $qty;
@@ -111,20 +111,18 @@ class OrderController extends Controller
 
         $cart->update(['items' => [], 'restaurant_id' => null]);
 
-        return new OrderResource($order->load(['items', 'restaurant', 'driver']));
+        return $this->success(new OrderResource($order->load(['items', 'restaurant', 'driver'])), 'Order checked out successfully.');
     }
 
     public function cancel(
         CancelOrderRequest $request,
         Order $order,
         CancelOrderAction $cancelOrderAction,
-    ): OrderResource {
+    ) {
         $this->authorizeCustomerOrder($request, $order);
-
         $dto = new CancelOrderDto($order->id, $request->input('reason'));
         $cancelled = $cancelOrderAction->handle($dto);
-
-        return new OrderResource($cancelled->load(['items', 'restaurant', 'driver']));
+        return $this->success(new OrderResource($cancelled->load(['items', 'restaurant', 'driver'])), 'Order cancelled successfully.');
     }
 
     private function authorizeCustomerOrder(Request $request, Order $order): void

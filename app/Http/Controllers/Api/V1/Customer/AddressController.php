@@ -8,12 +8,14 @@ use App\Http\Requests\Customer\UpdateAddressRequest;
 use App\Http\Resources\V1\CustomerAddressResource;
 use App\Models\CustomerAddress;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Http\Traits\ApiResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class AddressController extends Controller
 {
-    public function index(Request $request): AnonymousResourceCollection
+    use ApiResponse;
+    public function index(Request $request)
     {
         $addresses = CustomerAddress::query()
             ->where('user_id', $request->user()->id)
@@ -21,10 +23,10 @@ class AddressController extends Controller
             ->orderBy('id')
             ->get();
 
-        return CustomerAddressResource::collection($addresses);
+        return $this->success(CustomerAddressResource::collection($addresses), 'Addresses fetched successfully.');
     }
 
-    public function store(StoreAddressRequest $request): CustomerAddressResource
+    public function store(StoreAddressRequest $request)
     {
         $user = $request->user();
 
@@ -37,17 +39,16 @@ class AddressController extends Controller
             ['user_id' => $user->id]
         ));
 
-        return new CustomerAddressResource($address);
+        return $this->success(new CustomerAddressResource($address), 'Address created successfully.');
     }
 
-    public function show(Request $request, CustomerAddress $address): CustomerAddressResource
+    public function show(Request $request, CustomerAddress $address)
     {
         $this->authorizeAddress($request, $address);
-
-        return new CustomerAddressResource($address);
+        return $this->success(new CustomerAddressResource($address), 'Address fetched successfully.');
     }
 
-    public function update(UpdateAddressRequest $request, CustomerAddress $address): CustomerAddressResource
+    public function update(UpdateAddressRequest $request, CustomerAddress $address)
     {
         $this->authorizeAddress($request, $address);
 
@@ -60,15 +61,14 @@ class AddressController extends Controller
 
         $address->update($request->validated());
 
-        return new CustomerAddressResource($address->fresh());
+        return $this->success(new CustomerAddressResource($address->fresh()), 'Address updated successfully.');
     }
 
-    public function destroy(Request $request, CustomerAddress $address): Response
+    public function destroy(Request $request, CustomerAddress $address)
     {
         $this->authorizeAddress($request, $address);
         $address->delete();
-
-        return response()->noContent();
+        return $this->success(null, 'Address deleted successfully.');
     }
 
     private function authorizeAddress(Request $request, CustomerAddress $address): void

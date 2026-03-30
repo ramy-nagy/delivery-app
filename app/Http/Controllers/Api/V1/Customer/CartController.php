@@ -8,11 +8,13 @@ use App\Http\Resources\V1\CartResource;
 use App\Models\Cart;
 use App\Models\MenuItem;
 use Illuminate\Http\JsonResponse;
+use App\Http\Traits\ApiResponse;
 use Illuminate\Http\Request;
 
 class CartController extends Controller
 {
-    public function show(Request $request): CartResource|JsonResponse
+    use ApiResponse;
+    public function show(Request $request): JsonResponse
     {
         $cart = Cart::query()->firstOrCreate(
             ['user_id' => $request->user()->id],
@@ -23,10 +25,10 @@ class CartController extends Controller
             $cart->load('restaurant');
         }
 
-        return new CartResource($cart);
+        return $this->success(new CartResource($cart), 'Cart fetched successfully.');
     }
 
-    public function sync(SyncCartRequest $request): CartResource
+    public function sync(SyncCartRequest $request): JsonResponse
     {
         $user = $request->user();
         $restaurantId = (int) $request->validated('restaurant_id');
@@ -55,7 +57,7 @@ class CartController extends Controller
 
         $cart->load('restaurant');
 
-        return new CartResource($cart);
+        return $this->success(new CartResource($cart), 'Cart synced successfully.');
     }
 
     public function clear(Request $request): JsonResponse
