@@ -34,6 +34,14 @@ class RestaurantResource extends JsonResource
                 'slug' => $this->category->slug,
             ]),
             'menu_items' => MenuItemResource::collection($this->whenLoaded('menuItems')),
+            'menu_category' => $this->whenLoaded('mainCategory', function () {
+                return [
+                    'id' => $this->mainCategory->id,
+                    'name' => $this->mainCategory->name,
+                    'slug' => $this->mainCategory->slug,
+                    'image' => $this->mainCategory->image ? url('storage/' . $this->mainCategory->image) : null,
+                ];
+            }),
         ];
     }
 }
