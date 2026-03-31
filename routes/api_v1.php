@@ -61,7 +61,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::middleware('role:customer')->prefix('customer')->group(function (): void {
         Route::get('cart', [CartController::class, 'show']);
         Route::put('cart', [CartController::class, 'sync']);
-        Route::delete('cart', [CartController::class, 'clear']);
+        Route::delete('cart/{menuItemId}', [CartController::class, 'destroy']);
 
         Route::get('orders', [CustomerOrderController::class, 'index']);
         Route::post('orders', [CustomerOrderController::class, 'store'])

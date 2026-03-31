@@ -60,13 +60,25 @@ class CartController extends Controller
         return $this->success(new CartResource($cart), 'Cart synced successfully.');
     }
 
-    public function clear(Request $request): JsonResponse
+    public function destroy(Request $request, int $menuItemId): JsonResponse
     {
-        Cart::query()->where('user_id', $request->user()->id)->update([
-            'restaurant_id' => null,
-            'items' => [],
-        ]);
+        $cart = Cart::query()->where('user_id', $request->user()->id)->first();
 
-        return $this->success(null, 'Cart cleared.');
+        if (!$cart) {
+            abort(404, 'Cart not found.');
+        }
+
+        $items = $cart->items ?? [];
+        $items = array_filter($items, function (array $item) use ($menuItemId) {
+            return (int) $item['menu_item_id'] !== $menuItemId;
+        });
+
+        $cart->update(['items' => array_values($items)]);
+
+        if ($cart->restaurant_id) {
+            $cart->load('restaurant');
+        }
+
+        return $this->success(new CartResource($cart), 'Item removed from cart.');
     }
 }
