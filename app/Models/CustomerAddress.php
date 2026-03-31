@@ -13,11 +13,14 @@ class CustomerAddress extends Model
         'line1',
         'city',
         'governorate',
+        'is_default',
     ];
 
     protected function casts(): array
     {
-        return [];
+        return [
+            'is_default' => 'boolean',
+        ];
     }
 
     public function user(): BelongsTo

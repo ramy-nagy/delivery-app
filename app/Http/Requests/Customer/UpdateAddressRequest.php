@@ -13,6 +13,7 @@ class UpdateAddressRequest extends FormRequest
             'line1' => ['sometimes', 'string', 'max:255'],
             'city' => ['sometimes', 'nullable', 'string', 'max:128'],
             'governorate' => ['sometimes', 'nullable', 'string', 'max:128'],
+            'is_default' => ['sometimes', 'boolean'],
         ];
     }
 }

@@ -13,6 +13,7 @@ class StoreAddressRequest extends FormRequest
             'line1' => ['required', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:128'],
             'governorate' => ['nullable', 'string', 'max:128'],
+            'is_default' => ['sometimes', 'boolean'],
         ];
     }
 }

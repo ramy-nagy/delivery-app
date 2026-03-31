@@ -21,7 +21,6 @@ return new class extends Migration
             $table->dropColumn('country');
             $table->dropColumn('latitude');
             $table->dropColumn('longitude');
-            $table->dropColumn('is_default');
         });
     }
 
@@ -37,7 +36,6 @@ return new class extends Migration
             $table->string('country', 2)->nullable()->after('postal_code');
             $table->float('latitude')->nullable()->after('country');
             $table->float('longitude')->nullable()->after('latitude');
-            $table->boolean('is_default')->default(false)->after('longitude');
             
             // Rename governorate back to region
             $table->renameColumn('governorate', 'region');

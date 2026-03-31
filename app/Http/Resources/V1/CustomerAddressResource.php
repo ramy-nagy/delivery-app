@@ -18,6 +18,7 @@ class CustomerAddressResource extends JsonResource
             'line1' => $this->line1,
             'city' => $this->city,
             'governorate' => $this->governorate,
+            'is_default' => (bool) $this->is_default,
         ];
     }
 }
