@@ -11,23 +11,13 @@ class CustomerAddress extends Model
         'user_id',
         'label',
         'line1',
-        'line2',
         'city',
-        'region',
-        'postal_code',
-        'country',
-        'latitude',
-        'longitude',
-        'is_default',
+        'governorate',
     ];
 
     protected function casts(): array
     {
-        return [
-            'is_default' => 'boolean',
-            'latitude' => 'float',
-            'longitude' => 'float',
-        ];
+        return [];
     }
 
     public function user(): BelongsTo
