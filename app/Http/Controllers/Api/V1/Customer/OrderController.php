@@ -84,8 +84,8 @@ class OrderController extends Controller
             ];
         }
 
-        // Delivery fee and tax are set from the dashboard, not from the request
-        $deliveryFee = Money::fromFloat(0);
+        // Delivery fee is retrieved from the restaurant, tax is set to 0
+        $deliveryFee = Money::fromCents((int) $restaurant->delivery_fee_cents);
         $tax = Money::fromFloat(0);
 
         $deliveryLocation = null;
@@ -154,8 +154,8 @@ class OrderController extends Controller
             ];
         }
 
-        // Delivery fee and tax are set from the dashboard, not from the request
-        $deliveryFee = Money::fromFloat(0);
+        // Delivery fee is retrieved from the restaurant, tax is set to 0
+        $deliveryFee = Money::fromCents((int) $restaurant->delivery_fee_cents);
         $tax = Money::fromFloat(0);
 
         $deliveryLocation = null;

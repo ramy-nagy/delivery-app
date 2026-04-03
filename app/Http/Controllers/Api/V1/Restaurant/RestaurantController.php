@@ -76,4 +76,12 @@ class RestaurantController extends Controller
 
         return new RestaurantResource($restaurant->fresh()->load('category'));
     }
+
+    public function getDeliveryFee(Request $request, Restaurant $restaurant): JsonResponse
+    {
+        return response()->json([
+            'delivery_fee_cents' => $restaurant->delivery_fee_cents,
+            'delivery_fee' => round($restaurant->delivery_fee_cents / 100, 2),
+        ]);
+    }
 }

@@ -37,6 +37,7 @@ class Restaurant extends Model implements HasMedia
         'description',
         'phone',
         'minimum_order_cents',
+        'delivery_fee_cents',
         'latitude',
         'longitude',
         'opening_hours',

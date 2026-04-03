@@ -37,6 +37,7 @@ Route::prefix('auth')->group(function (): void {
 Route::get('restaurants', [RestaurantController::class, 'index']);
 Route::get('restaurants/{restaurant}', [RestaurantController::class, 'show']);
 Route::get('restaurants/{restaurant}/menu-items', [MenuController::class, 'index']);
+Route::get('restaurants/{restaurant}/delivery-fee', [RestaurantController::class, 'getDeliveryFee']);
 
 Route::get('restaurant-categories', [RestaurantCategoryController::class, 'index']);
 
