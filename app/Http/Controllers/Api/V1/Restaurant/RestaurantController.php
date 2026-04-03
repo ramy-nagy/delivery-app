@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Restaurant;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Restaurant\UpdateRestaurantProfileRequest;
 use App\Http\Resources\V1\RestaurantResource;
+use App\Http\Traits\ApiResponse;
 use App\Models\Restaurant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class RestaurantController extends Controller
 {
+    use ApiResponse;
     public function index(Request $request): AnonymousResourceCollection
     {
         $query = Restaurant::query()->with(['category', 'reviews']);
@@ -79,9 +81,9 @@ class RestaurantController extends Controller
 
     public function getDeliveryFee(Request $request, Restaurant $restaurant): JsonResponse
     {
-        return response()->json([
+        return $this->success([
             'delivery_fee_cents' => $restaurant->delivery_fee_cents,
             'delivery_fee' => round($restaurant->delivery_fee_cents / 100, 2),
-        ]);
+        ], 'Delivery fee retrieved successfully');
     }
 }
