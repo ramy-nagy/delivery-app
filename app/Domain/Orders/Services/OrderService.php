@@ -41,8 +41,8 @@ class OrderService
                 'tax_cents' => $dto->tax->cents(),
                 'total_cents' => $total->cents(),
                 'notes' => $dto->notes,
-                'delivery_latitude' => $dto->deliveryLocation->latitude,
-                'delivery_longitude' => $dto->deliveryLocation->longitude,
+                'delivery_latitude' => $dto->deliveryLocation?->latitude,
+                'delivery_longitude' => $dto->deliveryLocation?->longitude,
             ]);
 
             foreach ($dto->items as $row) {

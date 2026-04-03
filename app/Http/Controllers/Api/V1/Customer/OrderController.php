@@ -45,8 +45,69 @@ class OrderController extends Controller
         PlaceOrderRequest $request,
         CreateOrderActionInterface $action,
     ) {
-        $dto = CreateOrderDto::fromRequest($request);
+        $user = $request->user();
+        $cart = Cart::query()->where('user_id', $user->id)->first();
+
+        if ($cart === null || $cart->restaurant_id === null || $cart->items === []) {
+            return $this->error('Cart is empty.');
+        }
+
+        $restaurant = Restaurant::query()->findOrFail($cart->restaurant_id);
+        if (! $restaurant->isOpen()) {
+            return $this->error('Restaurant is closed.');
+        }
+
+        $items = $cart->items;
+        $restaurantId = (int) $cart->restaurant_id;
+
+        $subtotalCents = 0;
+        $normalized = [];
+
+        foreach ($items as $line) {
+            $menuItemId = (int) ($line['menu_item_id'] ?? 0);
+            $qty = (int) ($line['quantity'] ?? 0);
+            $menuItem = MenuItem::query()
+                ->where('id', $menuItemId)
+                ->where('restaurant_id', $restaurantId)
+                ->where('is_available', true)
+                ->first();
+
+            if ($menuItem === null || $qty < 1) {
+                return $this->error('Cart contains invalid or unavailable items.');
+            }
+
+            $subtotalCents += $menuItem->price_cents * $qty;
+            $normalized[] = [
+                'menu_item_id' => $menuItemId,
+                'quantity' => $qty,
+                'options' => $line['options'] ?? [],
+            ];
+        }
+
+        // Delivery fee and tax are set from the dashboard, not from the request
+        $deliveryFee = Money::fromFloat(0);
+        $tax = Money::fromFloat(0);
+
+        $deliveryLocation = null;
+        if ($request->has('delivery_location')) {
+            $deliveryLocation = Coordinate::fromArray($request->validated('delivery_location'));
+        }
+
+        $dto = new CreateOrderDto(
+            customerId: $user->id,
+            restaurantId: $restaurantId,
+            items: $normalized,
+            deliveryLocation: $deliveryLocation,
+            subtotal: Money::fromCents($subtotalCents),
+            deliveryFee: $deliveryFee,
+            tax: $tax,
+            notes: $request->input('notes'),
+        );
+
         $order = $action->execute($dto);
+
+        $cart->update(['items' => [], 'restaurant_id' => null]);
+
         return $this->success(new OrderResource($order->load(['items', 'restaurant', 'driver'])), 'Order placed successfully.');
     }
 
@@ -93,14 +154,20 @@ class OrderController extends Controller
             ];
         }
 
-        $deliveryFee = Money::fromFloat((float) $request->input('delivery_fee', 0));
-        $tax = Money::fromFloat((float) $request->input('tax', 0));
+        // Delivery fee and tax are set from the dashboard, not from the request
+        $deliveryFee = Money::fromFloat(0);
+        $tax = Money::fromFloat(0);
+
+        $deliveryLocation = null;
+        if ($request->has('delivery_location')) {
+            $deliveryLocation = Coordinate::fromArray($request->validated('delivery_location'));
+        }
 
         $dto = new CreateOrderDto(
             customerId: $user->id,
             restaurantId: $restaurantId,
             items: $normalized,
-            deliveryLocation: Coordinate::fromArray($request->validated('delivery_location')),
+            deliveryLocation: $deliveryLocation,
             subtotal: Money::fromCents($subtotalCents),
             deliveryFee: $deliveryFee,
             tax: $tax,

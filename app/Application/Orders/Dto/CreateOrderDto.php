@@ -13,7 +13,7 @@ class CreateOrderDto extends BaseDto
         public readonly int $customerId,
         public readonly int $restaurantId,
         public readonly array $items,
-        public readonly Coordinate $deliveryLocation,
+        public readonly ?Coordinate $deliveryLocation,
         public readonly Money $subtotal,
         public readonly Money $deliveryFee,
         public readonly Money $tax,
