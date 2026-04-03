@@ -123,9 +123,9 @@ class OrderController extends Controller
         }
 
         $restaurant = Restaurant::query()->findOrFail($cart->restaurant_id);
-        if (! $restaurant->isOpen()) {
-            return $this->error('Restaurant is closed.');
-        }
+        // if (! $restaurant->isOpen()) {
+        //     return $this->error('Restaurant is closed.');
+        // }
 
         $items = $cart->items;
         $restaurantId = (int) $cart->restaurant_id;
