@@ -84,8 +84,9 @@ class OrderController extends Controller
             ];
         }
 
-        // Delivery fee is retrieved from the restaurant, tax is set to 0
-        $deliveryFee = Money::fromCents((int) $restaurant->delivery_fee_cents);
+        // Delivery fee is retrieved from the restaurant, or default to 20 if not set
+        $deliveryFeeCents = $restaurant->delivery_fee_cents ?: 2000; // 20 = 2000 cents
+        $deliveryFee = Money::fromCents((int) $deliveryFeeCents);
         $tax = Money::fromFloat(0);
 
         $deliveryLocation = null;
@@ -154,8 +155,9 @@ class OrderController extends Controller
             ];
         }
 
-        // Delivery fee is retrieved from the restaurant, tax is set to 0
-        $deliveryFee = Money::fromCents((int) $restaurant->delivery_fee_cents);
+        // Delivery fee is retrieved from the restaurant, or default to 20 if not set
+        $deliveryFeeCents = $restaurant->delivery_fee_cents ?: 2000; // 20 = 2000 cents
+        $deliveryFee = Money::fromCents((int) $deliveryFeeCents);
         $tax = Money::fromFloat(0);
 
         $deliveryLocation = null;

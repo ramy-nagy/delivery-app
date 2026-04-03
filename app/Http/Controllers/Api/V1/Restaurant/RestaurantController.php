@@ -82,7 +82,7 @@ class RestaurantController extends Controller
     public function getDeliveryFee(Request $request, Restaurant $restaurant): JsonResponse
     {
         return $this->success([
-            'delivery_fee_cents' => $restaurant->delivery_fee_cents,
+            'delivery_fee_cents' => $restaurant->delivery_fee_cents ?? 20,
             'delivery_fee' => round($restaurant->delivery_fee_cents / 100, 2),
         ], 'Delivery fee retrieved successfully');
     }
