@@ -85,7 +85,7 @@ class OrderController extends Controller
         }
 
         // Delivery fee is retrieved from the restaurant, or default to 20 if not set
-        $deliveryFeeCents = $restaurant->delivery_fee_cents ?: 2000; // 20 = 2000 cents
+        $deliveryFeeCents = $restaurant->delivery_fee_cents ?: 20; // 20 = 2000 cents
         $deliveryFee = Money::fromCents((int) $deliveryFeeCents);
         $tax = Money::fromFloat(0);
 
