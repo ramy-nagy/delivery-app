@@ -273,17 +273,21 @@ class FCMService
             $message = $message->withTopic($target);
         }
 
-        // Add data payload
+        // Add data payload - ensure all values are strings
+        $stringData = [];
         if (!empty($data)) {
-            $message = $message->withData($data);
+            foreach ($data as $key => $value) {
+                $stringData[(string)$key] = (string)$value;
+            }
+            $message = $message->withData($stringData);
         }
 
-        // Set TTL (time to live) - default 24 hours
-        $ttl = $options['ttl'] ?? 86400;
-        $message = $message->withFcmOptions([
-            'ttl' => $ttl . 's',
-            'priority' => $options['priority'] ?? 'high',
-        ]);
+        // Set analytics label if provided
+        if (!empty($options['analytics_label'])) {
+            $message = $message->withFcmOptions([
+                'analytics_label' => $options['analytics_label'],
+            ]);
+        }
 
         // Android-specific options
         if (isset($options['android']) || !isset($options['exclude_android'])) {
@@ -295,7 +299,7 @@ class FCMService
                     'click_action' => $options['click_action'] ?? '',
                     'tag' => $options['tag'] ?? 'default',
                 ],
-                'data' => $data,
+                'data' => $stringData,
             ]);
         }
 
@@ -313,24 +317,27 @@ class FCMService
                         ],
                         'sound' => 'default',
                         'badge' => $options['ios_badge'] ?? '1',
-                        'custom_data' => $data,
+                        'mutable_content' => true,
                     ],
+                    'custom_data' => $stringData,
                 ],
             ]);
         }
 
-        // WebPush options
+        // WebPush options - TTL in headers as integer
         if (isset($options['webpush']) || !isset($options['exclude_webpush'])) {
+            $ttl = (int)($options['ttl'] ?? 86400); // Default 24 hours
             $message = $message->withWebpushConfig([
                 'headers' => [
                     'TTL' => $ttl,
+                    'Urgency' => $options['urgency'] ?? 'high',
                 ],
                 'notification' => [
                     'title' => $title,
                     'body' => $body,
                     'icon' => $options['icon'] ?? '',
                 ],
-                'data' => $data,
+                'data' => $stringData,
             ]);
         }
 
