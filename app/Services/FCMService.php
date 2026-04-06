@@ -315,7 +315,7 @@ class FCMService
                             'body' => $body,
                         ],
                         'sound' => 'default',
-                        'badge' => $options['ios_badge'] ?? '1',
+                        'badge' => (string)($options['ios_badge'] ?? '1'),
                         'mutable_content' => true,
                     ],
                 ],
