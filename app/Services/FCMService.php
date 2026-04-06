@@ -263,13 +263,16 @@ class FCMService
     ): CloudMessage {
         $notification = Notification::create($title, $body);
 
+        // Create base message and set target
+        $message = CloudMessage::new();
+
         if ($type === 'topic') {
-            $message = CloudMessage::withName($target)
-                ->withNotification($notification);
+            $message = $message->withTarget('topic', $target);
         } else {
-            $message = CloudMessage::withTarget('token', $target)
-                ->withNotification($notification);
+            $message = $message->withTarget('token', $target);
         }
+
+        $message = $message->withNotification($notification);
 
         // Add data payload
         if (!empty($data)) {
