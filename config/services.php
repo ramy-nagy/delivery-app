@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    'firebase' => [
+        'credentials_path' => env('FIREBASE_CREDENTIALS_PATH', storage_path('app/firebase-credentials.json')),
+        'database_url' => env('FIREBASE_DATABASE_URL'),
+        'project_id' => env('FIREBASE_PROJECT_ID'),
+    ],
+
+    'fcm' => [
+        'enabled' => env('FCM_ENABLED', true),
+        'batch_size' => env('FCM_BATCH_SIZE', 500),
+        'retry_attempts' => env('FCM_RETRY_ATTEMPTS', 3),
+        'retry_delay' => env('FCM_RETRY_DELAY', 10), // seconds
+        'default_ttl' => env('FCM_DEFAULT_TTL', 86400), // 24 hours
+        'priority' => env('FCM_PRIORITY', 'high'),
+        'stale_token_days' => env('FCM_STALE_TOKEN_DAYS', 30),
+    ],
+
 ];
