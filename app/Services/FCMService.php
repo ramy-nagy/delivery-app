@@ -5,8 +5,6 @@ namespace App\Services;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
-use Kreait\Firebase\Messaging\Token;
-use Kreait\Firebase\Messaging\Topic;
 use Psr\Http\Client\ClientExceptionInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -56,8 +54,7 @@ class FCMService
     ): string {
         try {
             $message = $this->buildMessage($token, $title, $body, $data, $options, 'token');
-            $target = new Token($token);
-            $result = $this->messaging->send($message, $target);
+            $result = $this->messaging->send($message);
 
             Log::info('FCM Message sent to token', [
                 'token' => substr($token, 0, 20) . '...',
@@ -151,8 +148,7 @@ class FCMService
     ): string {
         try {
             $message = $this->buildMessage($topic, $title, $body, $data, $options, 'topic');
-            $target = new Topic($topic);
-            $result = $this->messaging->send($message, $target);
+            $result = $this->messaging->send($message);
 
             Log::info('FCM Message sent to topic', [
                 'topic' => $topic,
@@ -269,6 +265,13 @@ class FCMService
         // Create base message with notification and data
         $message = CloudMessage::new()
             ->withNotification($notification);
+
+        // Set the target (token or topic)
+        if ($type === 'token') {
+            $message = $message->withToken($target);
+        } elseif ($type === 'topic') {
+            $message = $message->withTopic($target);
+        }
 
         // Add data payload
         if (!empty($data)) {
