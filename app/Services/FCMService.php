@@ -273,7 +273,7 @@ class FCMService
             $message = $message->withTopic($target);
         }
 
-        // Add data payload - ensure all values are strings
+        // Add data payload - ensure all keys and values are strings
         $stringData = [];
         if (!empty($data)) {
             foreach ($data as $key => $value) {
@@ -299,7 +299,6 @@ class FCMService
                     'click_action' => $options['click_action'] ?? '',
                     'tag' => $options['tag'] ?? 'default',
                 ],
-                'data' => $stringData,
             ]);
         }
 
@@ -319,7 +318,6 @@ class FCMService
                         'badge' => $options['ios_badge'] ?? '1',
                         'mutable_content' => true,
                     ],
-                    'custom_data' => $stringData,
                 ],
             ]);
         }
@@ -337,7 +335,6 @@ class FCMService
                     'body' => $body,
                     'icon' => $options['icon'] ?? '',
                 ],
-                'data' => $stringData,
             ]);
         }
 
