@@ -55,14 +55,17 @@ class FCMService
         try {
             $message = $this->buildMessage($token, $title, $body, $data, $options, 'token');
             $result = $this->messaging->send($message);
+            
+            // Extract message ID from result (array)
+            $messageId = is_array($result) && isset($result['name']) ? $result['name'] : (is_string($result) ? $result : 'sent');
 
             Log::info('FCM Message sent to token', [
                 'token' => substr($token, 0, 20) . '...',
-                'message_id' => $result,
+                'message_id' => $messageId,
                 'title' => $title,
             ]);
 
-            return $result;
+            return $messageId;
         } catch (ClientExceptionInterface $e) {
             Log::error('FCM Send to Token Failed - Client Error', [
                 'token' => substr($token, 0, 20) . '...',
@@ -149,14 +152,17 @@ class FCMService
         try {
             $message = $this->buildMessage($topic, $title, $body, $data, $options, 'topic');
             $result = $this->messaging->send($message);
+            
+            // Extract message ID from result (array)
+            $messageId = is_array($result) && isset($result['name']) ? $result['name'] : (is_string($result) ? $result : 'sent');
 
             Log::info('FCM Message sent to topic', [
                 'topic' => $topic,
-                'message_id' => $result,
+                'message_id' => $messageId,
                 'title' => $title,
             ]);
 
-            return $result;
+            return $messageId;
         } catch (ClientExceptionInterface $e) {
             Log::error('FCM Send to Topic Failed - Client Error', [
                 'topic' => $topic,
