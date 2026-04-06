@@ -6,6 +6,8 @@ use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
 use Kreait\Firebase\Messaging\WebNotification;
+use Kreait\Firebase\Messaging\Token;
+use Kreait\Firebase\Messaging\Topic;
 use Psr\Http\Client\ClientExceptionInterface;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -54,8 +56,9 @@ class FCMService
         array $options = []
     ): string {
         try {
-            $message = $this->buildMessage($token, $title, $body, $data, $options);
-            $result = $this->messaging->send($message);
+            $message = $this->buildMessage($token, $title, $body, $data, $options, 'token');
+            $target = new Token($token);
+            $result = $this->messaging->send($message, $target);
 
             Log::info('FCM Message sent to token', [
                 'token' => substr($token, 0, 20) . '...',
@@ -149,7 +152,8 @@ class FCMService
     ): string {
         try {
             $message = $this->buildMessage($topic, $title, $body, $data, $options, 'topic');
-            $result = $this->messaging->send($message);
+            $target = new Topic($topic);
+            $result = $this->messaging->send($message, $target);
 
             Log::info('FCM Message sent to topic', [
                 'topic' => $topic,
@@ -263,16 +267,9 @@ class FCMService
     ): CloudMessage {
         $notification = Notification::create($title, $body);
 
-        // Create base message and set target
-        $message = CloudMessage::new();
-
-        if ($type === 'topic') {
-            $message = $message->withTarget('topic', $target);
-        } else {
-            $message = $message->withTarget('token', $target);
-        }
-
-        $message = $message->withNotification($notification);
+        // Create base message with notification and data
+        $message = CloudMessage::new()
+            ->withNotification($notification);
 
         // Add data payload
         if (!empty($data)) {
