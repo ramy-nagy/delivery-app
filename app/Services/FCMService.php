@@ -5,7 +5,6 @@ namespace App\Services;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
-use Kreait\Firebase\Messaging\WebNotification;
 use Kreait\Firebase\Messaging\Token;
 use Kreait\Firebase\Messaging\Topic;
 use Psr\Http\Client\ClientExceptionInterface;
@@ -319,9 +318,15 @@ class FCMService
 
         // WebPush options
         if (isset($options['webpush']) || !isset($options['exclude_webpush'])) {
-            $webNotification = WebNotification::create($title, $body);
             $message = $message->withWebpushConfig([
-                'notification' => $webNotification,
+                'headers' => [
+                    'TTL' => $ttl,
+                ],
+                'notification' => [
+                    'title' => $title,
+                    'body' => $body,
+                    'icon' => $options['icon'] ?? '',
+                ],
                 'data' => $data,
             ]);
         }
