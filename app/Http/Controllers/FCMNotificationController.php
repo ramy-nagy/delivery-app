@@ -264,4 +264,48 @@ class FCMNotificationController extends Controller
             return $this->serverErrorResponse('Failed to send test notification: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Send notification to a topic.
+     * POST /api/fcm/send-to-topic
+     *
+     * @param Request $request
+     * @return JsonResponse
+     * @throws ValidationException
+     */
+    public function sendToTopic(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'topic' => 'required|string',
+            'title' => 'required|string|max:200',
+            'body' => 'required|string|max:500',
+            'data' => 'nullable|array',
+            'options' => 'nullable|array',
+        ]);
+
+        if (!FCMService::isValidTopic($validated['topic'])) {
+            return $this->unprocessableResponse('Invalid topic name format');
+        }
+
+        try {
+            $messageId = $this->fcmService->sendToTopic(
+                $validated['topic'],
+                $validated['title'],
+                $validated['body'],
+                $validated['data'] ?? [],
+                $validated['options'] ?? []
+            );
+
+            return $this->successResponse(
+                data: [
+                    'topic' => $validated['topic'],
+                    'message_id' => $messageId,
+                    'title' => $validated['title'],
+                ],
+                message: 'Notification sent to topic successfully'
+            );
+        } catch (\Exception $e) {
+            return $this->serverErrorResponse('Failed to send notification to topic: ' . $e->getMessage());
+        }
+    }
 }
